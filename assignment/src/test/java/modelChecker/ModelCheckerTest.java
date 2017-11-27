@@ -29,7 +29,8 @@ public class ModelCheckerTest {
             StateFormula query = new FormulaParser("src/test/resources/ctl1.json").parse();
 
             ModelChecker mc = new SimpleModelChecker();
-
+            System.out.println("Test@@@@@@@@@@@@");
+            assertEquals(5,6);
             // TO IMPLEMENT
             // assertTrue(mc.check(model, fairnessConstraint, query));
         } catch (IOException e) {
