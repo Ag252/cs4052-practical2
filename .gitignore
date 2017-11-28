@@ -1,4 +1,4 @@
-.gradle/
-assignment/.gradle
-assignment/.settings
-assignment/build
+.gradle
+.settings
+.git
+build
