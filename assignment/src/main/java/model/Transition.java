@@ -3,14 +3,14 @@ package model;
 import java.util.Arrays;
 
 /**
- * Each transition may have a set of actions to be performed. 
- * 
+ * Each transition may have a set of actions to be performed.
+ *
  **/
 public class  Transition {
     private String source;
     private String target;
     private String [] actions;
-	
+
     /**
      * Returns the source state of a transition.
      * @return the id of the source state
@@ -32,7 +32,7 @@ public class  Transition {
     public String[] getActions() {
 	return actions;
     }
-	
+
     @Override
     public String toString() {
 	StringBuilder sb = new StringBuilder();
@@ -41,5 +41,5 @@ public class  Transition {
 	sb.append(this.target);
 	return sb.toString();
     }
-	
+
 }

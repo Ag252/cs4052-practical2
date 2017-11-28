@@ -37,6 +37,16 @@ public class Model {
       return(new ArrayList<State>(Arrays.asList(states)));
     }
 
+    public ArrayList<State> getTargetsofState(State state) {
+      ArrayList<State> targets = new ArrayList<State>();
+      for(int i = 0; i < transitions.length; i++) {
+        if(transitions[i].getSource().equals(state.getName())) {
+          targets.add(getStateFromName(transitions[i].getTarget()));
+        }
+      }
+      return targets;
+    }
+
     /**
      * Returns the list of transitions
      *
@@ -44,6 +54,15 @@ public class Model {
      */
     public Transition[] getTransitions() {
         return transitions;
+    }
+
+    public State getStateFromName(String name) {
+      for (State s : this.getStates()) {
+          if (s.getName().equals(name)) {
+            return s;
+          }
+      }
+      return null;
     }
 
 }

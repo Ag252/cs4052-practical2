@@ -1,20 +1,17 @@
 package modelChecker;
 
 import formula.stateFormula.*;
+import formula.pathFormula.*;
 import model.*;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 
 public class SimpleModelChecker implements ModelChecker {
 
-    public static void main(String[] args) {
-      System.out.println("Test");
-    }
-
     @Override
     public boolean check(Model model, StateFormula constraint, StateFormula query) {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -31,7 +28,32 @@ public class SimpleModelChecker implements ModelChecker {
       else if (formula instanceof Or) {
         return union(sat(model, ((Or)formula).left), sat(model, ((Or)formula).right));
       }
+      else if (formula instanceof ThereExists) {
+        PathFormula pf = ((ThereExists)formula).pathFormula;
+        if(pf instanceof Next) {
+          return satEX(model, ((Next)pf).stateFormula);
+        }
+      }
       return null;
+    }
+
+    public ArrayList<State> satEX(Model model, StateFormula formula) {
+      ArrayList<State> validStates = new ArrayList<State>();
+      for (State s : model.getStateList()) {
+        System.out.println("START OF PRINT of " + s);
+        printArrayList(postEX(model, s));
+        printArrayList(sat(model, formula));
+        System.out.println(formula);
+        System.out.println("END OF PRINT");
+        if(!intersection(postEX(model, s), sat(model, formula)).isEmpty()) {
+          validStates.add(s);
+        }
+      }
+      return validStates;
+    }
+
+    public ArrayList<State> postEX(Model model, State state) {
+      return model.getTargetsofState(state);
     }
 
     public ArrayList<State> setDiff(ArrayList<State> allStates, ArrayList<State> removeStates) {
@@ -63,12 +85,21 @@ public class SimpleModelChecker implements ModelChecker {
 
     public ArrayList<State> atomicEval(Model model, String atomLabel) {
       ArrayList<State>trueStates = new ArrayList<State>();
+
+
       State[] states = model.getStates();
-      for(int i = 0; i < states.length; i++) {
-        if(contains(atomLabel,states[i].getLabel())){
-          trueStates.add(states[i]);
+      for(State s : states){
+        ArrayList<String>stateLabels = new ArrayList<String>(Arrays.asList(s.getLabel()));
+        if(stateLabels.contains(atomLabel)){
+          trueStates.add(s);
         }
       }
+
+      // for(int i = 0; i < states.length; i++) {
+      //   if(contains(atomLabel,states[i].getLabel())){
+      //     trueStates.add(states[i]);
+      //   }
+      // }
       return trueStates;
     }
 
@@ -85,6 +116,10 @@ public class SimpleModelChecker implements ModelChecker {
     public String[] getTrace() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public void printArrayList(ArrayList<State> arrayList) {
+      System.out.println(Arrays.toString(arrayList.toArray()));
     }
 
 }
