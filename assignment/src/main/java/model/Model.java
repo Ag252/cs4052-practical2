@@ -2,6 +2,8 @@ package model;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 import com.google.gson.Gson;
 
@@ -24,16 +26,20 @@ public class Model {
 
     /**
      * Returns the list of the states
-     * 
+     *
      * @return list of state for the given model
      */
     public State[] getStates() {
         return states;
     }
 
+    public ArrayList<State> getStateList() {
+      return(new ArrayList<State>(Arrays.asList(states)));
+    }
+
     /**
      * Returns the list of transitions
-     * 
+     *
      * @return list of transition for the given model
      */
     public Transition[] getTransitions() {
