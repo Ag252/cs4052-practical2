@@ -1,5 +1,4 @@
-/.gradle
-/assignment/.gradle
-/assignment/.settings
-/assignment/bin
-/assignment/build
+.gradle/
+assignment/.gradle
+assignment/.settings
+assignment/build
