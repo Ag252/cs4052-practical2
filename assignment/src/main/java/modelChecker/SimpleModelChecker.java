@@ -40,11 +40,6 @@ public class SimpleModelChecker implements ModelChecker {
     public ArrayList<State> satEX(Model model, StateFormula formula) {
       ArrayList<State> validStates = new ArrayList<State>();
       for (State s : model.getStateList()) {
-        System.out.println("START OF PRINT of " + s);
-        printArrayList(postEX(model, s));
-        printArrayList(sat(model, formula));
-        System.out.println(formula);
-        System.out.println("END OF PRINT");
         if(!intersection(postEX(model, s), sat(model, formula)).isEmpty()) {
           validStates.add(s);
         }
