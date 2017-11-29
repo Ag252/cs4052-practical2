@@ -16,7 +16,15 @@ public class SimpleModelChecker implements ModelChecker {
     }
 
     public ArrayList<State> sat(Model model, StateFormula formula) {
-      if(formula instanceof AtomicProp) {
+      if(formula instanceof BoolProp) {
+        if(((BoolProp)formula).value) {
+          return model.getStateList();
+        }
+        else {
+          return (new ArrayList<State>());
+        }
+      }
+      else if(formula instanceof AtomicProp) {
         return atomicEval(model, ((AtomicProp)formula).label);
       }
       else if(formula instanceof Not) {
@@ -34,10 +42,14 @@ public class SimpleModelChecker implements ModelChecker {
           return satEX(model, ((Next)pf).stateFormula);
         }
         else if (pf instanceof Until) {
-          return satEU(model, pf);
+          Until until = (Until) pf;
+          return satEU(model, until.left, until.right);
         }
         else if (pf instanceof Always) {
           return satEG(model, pf);
+        }
+        else if (pf instanceof Eventually) {
+          return satEU(model, new BoolProp(true), ((Eventually)pf).stateFormula);
         }
       }
       else if (formula instanceof ForAll) {
@@ -45,9 +57,29 @@ public class SimpleModelChecker implements ModelChecker {
         if(pf instanceof Next) {
           return satAX(model, ((Next)pf).stateFormula);
         }
+        else if(pf instanceof Until) {
+          Until until = (Until) pf;
+          StateFormula notPhi1 = new Not(until.left);
+          StateFormula notPhi2 = new Not(until.right);
+
+          StateFormula existsUntil = new ThereExists(new Until(notPhi2, new And(notPhi1, notPhi2)));
+          StateFormula existsAlways = new ThereExists(new Always(notPhi2));
+          StateFormula notOr = new Not(new Or(existsUntil, existsAlways));
+
+          return sat(model, notOr);
+        }
+        else if (pf instanceof Always) {
+          StateFormula notPhi = new Not(((Always)pf).stateFormula);
+          PathFormula eventually = new Eventually(notPhi);
+          StateFormula thereExists = new ThereExists(eventually);
+          StateFormula notThereExists = new Not(thereExists);
+          return sat(model, notThereExists);
+        }
       }
       return null;
     }
+
+
 
     public ArrayList<State> satEG(Model model, PathFormula formula) {
       Always always = (Always) formula;
@@ -62,7 +94,7 @@ public class SimpleModelChecker implements ModelChecker {
     public void recurseOverPostStates(Model model, State initState, State currentState, ArrayList<State> satSetPhi, ArrayList<State> tempSet, ArrayList<State> satSetAlways) {
       ArrayList<State> postStates = post(model, currentState);
       for(State p : postStates) {
-        if(tempSet.contains(p)) { /* */
+        if(tempSet.contains(p)) {
           satSetAlways.add(initState);
         }
         else if (satSetPhi.contains(p)) {
@@ -72,11 +104,10 @@ public class SimpleModelChecker implements ModelChecker {
       }
     }
 
-    public ArrayList<State> satEU(Model model, PathFormula formula) {
-      Until until = (Until) formula;
+    public ArrayList<State> satEU(Model model, StateFormula left, StateFormula right) {
       ArrayList<State> satSetUntil = new ArrayList<State>();
-      ArrayList<State> satSetPhi1 = sat(model, until.left);
-      ArrayList<State> satSetPhi2 = sat(model, until.right);
+      ArrayList<State> satSetPhi1 = sat(model, left);
+      ArrayList<State> satSetPhi2 = sat(model, right);
       for(State s : satSetPhi2) {
         recurseOverPreStates(model, s, satSetPhi1, satSetUntil);
       }

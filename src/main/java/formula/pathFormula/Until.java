@@ -18,6 +18,12 @@ public class Until extends PathFormula {
         this.rightActions = rightActions;
     }
 
+    public Until(StateFormula left, StateFormula right) {
+      super();
+      this.left = left;
+      this.right = right;
+    }
+
     public Set<String> getLeftActions() {
         return leftActions;
     }

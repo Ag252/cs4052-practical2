@@ -13,6 +13,10 @@ public class Always extends PathFormula {
         this.actions = actions;
     }
 
+    public Always(StateFormula stateFormula) {
+      this.stateFormula = stateFormula;
+    }
+
     public Set<String> getActions() {
         return actions;
     }
