@@ -37,7 +37,7 @@ public class Model {
       return(new ArrayList<State>(Arrays.asList(states)));
     }
 
-    public ArrayList<State> getTargetsofState(State state) {
+    public ArrayList<State> getTargetsOfState(State state) {
       ArrayList<State> targets = new ArrayList<State>();
       for(int i = 0; i < transitions.length; i++) {
         if(transitions[i].getSource().equals(state.getName())) {
@@ -45,6 +45,16 @@ public class Model {
         }
       }
       return targets;
+    }
+
+    public ArrayList<State> getSourcesOfState(State state) {
+      ArrayList<State> sources = new ArrayList<State>();
+      for(int i = 0; i < transitions.length; i++) {
+        if(transitions[i].getTarget().equals(state.getName())) {
+          sources.add(getStateFromName(transitions[i].getSource()));
+        }
+      }
+      return sources;
     }
 
     /**

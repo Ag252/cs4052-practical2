@@ -33,6 +33,12 @@ public class SimpleModelChecker implements ModelChecker {
         if(pf instanceof Next) {
           return satEX(model, ((Next)pf).stateFormula);
         }
+        else if (pf instanceof Until) {
+          return satEU(model, pf);
+        }
+        else if (pf instanceof Always) {
+          return satEG(model, pf);
+        }
       }
       else if (formula instanceof ForAll) {
         PathFormula pf = ((ForAll)formula).pathFormula;
@@ -41,6 +47,57 @@ public class SimpleModelChecker implements ModelChecker {
         }
       }
       return null;
+    }
+
+    public ArrayList<State> satEG(Model model, PathFormula formula) {
+      Always always = (Always) formula;
+      ArrayList<State> satSetAlways = new ArrayList<State>();
+      ArrayList<State> satSetPhi = sat(model, always.stateFormula);
+      for(State s : satSetPhi) {
+        recurseOverPostStates(model, s, s, satSetPhi, new ArrayList<State>(), satSetAlways);
+      }
+      return satSetAlways;
+    }
+
+    public void recurseOverPostStates(Model model, State initState, State currentState, ArrayList<State> satSetPhi, ArrayList<State> tempSet, ArrayList<State> satSetAlways) {
+      ArrayList<State> postStates = post(model, currentState);
+      for(State p : postStates) {
+        if(tempSet.contains(p)) { /* */
+          satSetAlways.add(initState);
+        }
+        else if (satSetPhi.contains(p)) {
+          tempSet.add(p);
+          recurseOverPostStates(model, initState, p, satSetPhi, tempSet, satSetAlways);
+        }
+      }
+    }
+
+    public ArrayList<State> satEU(Model model, PathFormula formula) {
+      Until until = (Until) formula;
+      ArrayList<State> satSetUntil = new ArrayList<State>();
+      ArrayList<State> satSetPhi1 = sat(model, until.left);
+      ArrayList<State> satSetPhi2 = sat(model, until.right);
+      for(State s : satSetPhi2) {
+        recurseOverPreStates(model, s, satSetPhi1, satSetUntil);
+      }
+      return satSetUntil;
+    }
+
+    public void recurseOverPreStates(Model model, State s, ArrayList<State> satSetPhi1, ArrayList<State> satSetUntil){
+	     ArrayList<State> preStates = pre(model, s);
+      	for(State p : preStates) {
+      		if(satSetUntil.contains(p)) {
+      			continue;
+      		}
+      		else if(satSetPhi1.contains(p)) {
+      			satSetUntil.add(p);
+      			recurseOverPreStates(model, p, satSetPhi1, satSetUntil);
+          }
+        }
+    }
+
+    public ArrayList<State> pre(Model model, State s) {
+      return model.getSourcesOfState(s);
     }
 
     public ArrayList<State> satEX(Model model, StateFormula formula) {
@@ -63,10 +120,8 @@ public class SimpleModelChecker implements ModelChecker {
       return validStates;
     }
 
-
-
     public ArrayList<State> post(Model model, State state) {
-      return model.getTargetsofState(state);
+      return model.getTargetsOfState(state);
     }
 
     public ArrayList<State> setDiff(ArrayList<State> allStates, ArrayList<State> removeStates) {

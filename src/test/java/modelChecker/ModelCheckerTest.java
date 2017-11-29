@@ -182,6 +182,96 @@ public class ModelCheckerTest {
       }
     }
 
+    @Test
+    public void testThereExistsUntil() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model1.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlExistsUntil.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 2);
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testThereExistsUntil2() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlExistsUntil2.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 3);
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testPre() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlExistsUntil2.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+        System.out.print("model state: " + model.getStates()[3]);
+        printArrayList(mc.pre(model, model.getStates()[3]));
+        //assertEquals(mc.sat(model, query).size(), 3);
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testThereExistsAlways() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlExistsAlways.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 3);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testThereExistsAlways2() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlExistsAlways2.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 2);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
     public void printArrayList(ArrayList<State> arrayList) {
       System.out.println(Arrays.toString(arrayList.toArray()));
     }
