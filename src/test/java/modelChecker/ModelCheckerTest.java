@@ -139,7 +139,7 @@ public class ModelCheckerTest {
         StateFormula query = new FormulaParser("src/test/resources/ctlAtomic.json").parse();
 
         SimpleModelChecker mc = new SimpleModelChecker();
-        System.out.println(Arrays.toString(mc.postEX(model, model.getStates()[2]).toArray()));
+        System.out.println(Arrays.toString(mc.post(model, model.getStates()[2]).toArray()));
 
         //assertEquals(mc.sat(model, query).size(), 2);
       } catch (IOException e) {
@@ -155,6 +155,23 @@ public class ModelCheckerTest {
 
         StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
         StateFormula query = new FormulaParser("src/test/resources/ctlExistsNext.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 3);
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testForAllNext() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlForAllNext.json").parse();
 
         SimpleModelChecker mc = new SimpleModelChecker();
         printArrayList(mc.sat(model, query));

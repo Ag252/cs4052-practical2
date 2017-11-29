@@ -34,20 +34,38 @@ public class SimpleModelChecker implements ModelChecker {
           return satEX(model, ((Next)pf).stateFormula);
         }
       }
+      else if (formula instanceof ForAll) {
+        PathFormula pf = ((ForAll)formula).pathFormula;
+        if(pf instanceof Next) {
+          return satAX(model, ((Next)pf).stateFormula);
+        }
+      }
       return null;
     }
 
     public ArrayList<State> satEX(Model model, StateFormula formula) {
       ArrayList<State> validStates = new ArrayList<State>();
       for (State s : model.getStateList()) {
-        if(!intersection(postEX(model, s), sat(model, formula)).isEmpty()) {
+        if(!intersection(post(model, s), sat(model, formula)).isEmpty()) {
           validStates.add(s);
         }
       }
       return validStates;
     }
 
-    public ArrayList<State> postEX(Model model, State state) {
+    public ArrayList<State> satAX(Model model, StateFormula formula) {
+      ArrayList<State> validStates = new ArrayList<State>();
+      for (State s : model.getStateList()) {
+        if(sat(model, formula).containsAll(post(model, s))) {
+          validStates.add(s);
+        }
+      }
+      return validStates;
+    }
+
+
+
+    public ArrayList<State> post(Model model, State state) {
       return model.getTargetsofState(state);
     }
 
