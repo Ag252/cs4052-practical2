@@ -3,6 +3,7 @@ package modelChecker;
 import formula.stateFormula.*;
 import formula.pathFormula.*;
 import model.*;
+import modelChecker.*;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,15 +59,22 @@ public class SimpleModelChecker implements ModelChecker {
           return satAX(model, ((Next)pf).stateFormula);
         }
         else if(pf instanceof Until) {
-          Until until = (Until) pf;
-          StateFormula notPhi1 = new Not(until.left);
-          StateFormula notPhi2 = new Not(until.right);
+          return satAU(model, pf);
+          //Until until = (Until) pf;
 
-          StateFormula existsUntil = new ThereExists(new Until(notPhi2, new And(notPhi1, notPhi2)));
-          StateFormula existsAlways = new ThereExists(new Always(notPhi2));
-          StateFormula notOr = new Not(new Or(existsUntil, existsAlways));
+          // StateFormula notPhi1 = new Not(until.left);
+          // StateFormula notPhi2 = new Not(until.right);
+          // StateFormula and = new And(notPhi1, notPhi2);
+          //
+          // PathFormula untilAnd = new Until(notPhi2, and);
+          // PathFormula alwaysNot = new Always(notPhi2);
+          //
+          // StateFormula existsUntil = new ThereExists(untilAnd);
+          // StateFormula existsAlwaysNot = new ThereExists(alwaysNot);
+          // StateFormula or = new Or(existsUntil, existsAlwaysNot);
+          // StateFormula notOr = new Not(or);
 
-          return sat(model, notOr);
+          // return sat(model, notOr);
         }
         else if (pf instanceof Always) {
           StateFormula notPhi = new Not(((Always)pf).stateFormula);
@@ -75,23 +83,65 @@ public class SimpleModelChecker implements ModelChecker {
           StateFormula notThereExists = new Not(thereExists);
           return sat(model, notThereExists);
         }
+        else if (pf instanceof Eventually) {
+          return satAU(model, new Until(new BoolProp(true), ((Eventually)pf).stateFormula));
+        }
       }
       return null;
     }
 
+    public ArrayList<State> satAU(Model model, PathFormula formula) {
+      Until until = (Until) formula;
+      ArrayList<State> satSetUntil = new ArrayList<State>();
+      ArrayList<State> satSetPhi1 = sat(model, until.left);
+      ArrayList<State> satSetPhi2 = sat(model, until.right);
+      for(State s : satSetPhi1) {
+        BooleanHolder allPathsHold = new BooleanHolder(true);
+        recurseOverAUPostStates(allPathsHold, model, s, s, satSetPhi1, satSetPhi2, new ArrayList<State>(), satSetUntil);
+        if(allPathsHold.value) {
+          satSetUntil.add(s);
+        }
+      }
+      return satSetUntil;
+    }
 
+    public void recurseOverAUPostStates(BooleanHolder allPathsHold, Model model, State initState, State currentState, ArrayList<State> satSetPhi1, ArrayList<State> satSetPhi2, ArrayList<State> tempSet, ArrayList<State> satSetUntil) {
+      ArrayList<State> postStates = post(model, currentState);
+      for(State p : postStates) {
+        if(tempSet.contains(p)) {
+          if(satSetPhi2.contains(p)) {
+            continue;
+          }
+          else {
+            allPathsHold.value = false;
+            return;
+          }
+        }
+        else if (satSetPhi2.contains(p)) {
+          continue;
+        }
+        else if (satSetPhi1.contains(p)) {
+          tempSet.add(p);
+          recurseOverAUPostStates(allPathsHold, model, initState, p, satSetPhi1, satSetPhi2, tempSet, satSetUntil);
+        }
+        else {
+          allPathsHold.value = false;
+          return;
+        }
+      }
+    }
 
     public ArrayList<State> satEG(Model model, PathFormula formula) {
       Always always = (Always) formula;
       ArrayList<State> satSetAlways = new ArrayList<State>();
       ArrayList<State> satSetPhi = sat(model, always.stateFormula);
       for(State s : satSetPhi) {
-        recurseOverPostStates(model, s, s, satSetPhi, new ArrayList<State>(), satSetAlways);
+        recurseOverEGPostStates(model, s, s, satSetPhi, new ArrayList<State>(), satSetAlways);
       }
       return satSetAlways;
     }
 
-    public void recurseOverPostStates(Model model, State initState, State currentState, ArrayList<State> satSetPhi, ArrayList<State> tempSet, ArrayList<State> satSetAlways) {
+    public void recurseOverEGPostStates(Model model, State initState, State currentState, ArrayList<State> satSetPhi, ArrayList<State> tempSet, ArrayList<State> satSetAlways) {
       ArrayList<State> postStates = post(model, currentState);
       for(State p : postStates) {
         if(tempSet.contains(p)) {
@@ -99,7 +149,7 @@ public class SimpleModelChecker implements ModelChecker {
         }
         else if (satSetPhi.contains(p)) {
           tempSet.add(p);
-          recurseOverPostStates(model, initState, p, satSetPhi, tempSet, satSetAlways);
+          recurseOverEGPostStates(model, initState, p, satSetPhi, tempSet, satSetAlways);
         }
       }
     }
@@ -178,7 +228,6 @@ public class SimpleModelChecker implements ModelChecker {
                 list.add(t);
             }
         }
-
         return list;
     }
 
@@ -193,12 +242,6 @@ public class SimpleModelChecker implements ModelChecker {
           trueStates.add(s);
         }
       }
-
-      // for(int i = 0; i < states.length; i++) {
-      //   if(contains(atomLabel,states[i].getLabel())){
-      //     trueStates.add(states[i]);
-      //   }
-      // }
       return trueStates;
     }
 
