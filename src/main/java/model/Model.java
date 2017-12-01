@@ -38,7 +38,7 @@ public class Model {
       return(new ArrayList<State>(Arrays.asList(states)));
     }
 
-    public ArrayList<ASPair> ACTgetTargetsOfState(State state) {
+    public ArrayList<ASPair> getTargetsOfState(State state) {
       ArrayList<ASPair> targets = new ArrayList<ASPair>();
       for(int i = 0; i < transitions.length; i++) {
         if(transitions[i].getSource().equals(state.getName())) {
@@ -48,26 +48,6 @@ public class Model {
         }
       }
       return targets;
-    }
-
-    public ArrayList<State> getTargetsOfState(State state) {
-      ArrayList<State> targets = new ArrayList<State>();
-      for(int i = 0; i < transitions.length; i++) {
-        if(transitions[i].getSource().equals(state.getName())) {
-          targets.add(getStateFromName(transitions[i].getTarget()));
-        }
-      }
-      return targets;
-    }
-
-    public ArrayList<State> getSourcesOfState(State state) {
-      ArrayList<State> sources = new ArrayList<State>();
-      for(int i = 0; i < transitions.length; i++) {
-        if(transitions[i].getTarget().equals(state.getName())) {
-          sources.add(getStateFromName(transitions[i].getSource()));
-        }
-      }
-      return sources;
     }
 
     /**

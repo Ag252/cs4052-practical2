@@ -19,9 +19,11 @@ public class ASPair {
     for(ASPair a : asPairs) {
       ArrayList<String> stateActions = new ArrayList<String>(Arrays.asList(a.actions));
       ArrayList<String> constraintActions = new ArrayList<String>(actions);
+
+
       stateActions.retainAll(constraintActions);
 
-      if(!stateActions.isEmpty()) {
+      if(!stateActions.isEmpty() || constraintActions.isEmpty()) {
         validStates.add(a.state);
       }
     }
@@ -34,7 +36,7 @@ public class ASPair {
       ArrayList<String> stateActions = new ArrayList<String>(Arrays.asList(a.actions));
       ArrayList<String> constraintActions = new ArrayList<String>(actions);
 
-      if(constraintActions.containsAll(stateActions)) {
+      if(constraintActions.containsAll(stateActions) || constraintActions.isEmpty()) {
         validStates.add(a.state);
       }
 

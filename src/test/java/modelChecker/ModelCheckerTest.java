@@ -131,24 +131,6 @@ public class ModelCheckerTest {
     }
 
     @Test
-    public void testPost() {
-      try {
-        Model model = Model.parseModel("src/test/resources/model1.json");
-
-        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
-        StateFormula query = new FormulaParser("src/test/resources/ctlAtomic.json").parse();
-
-        SimpleModelChecker mc = new SimpleModelChecker();
-        System.out.println(Arrays.toString(mc.post(model, model.getStates()[2]).toArray()));
-
-        //assertEquals(mc.sat(model, query).size(), 2);
-      } catch (IOException e) {
-          e.printStackTrace();
-          fail(e.toString());
-      }
-    }
-
-    @Test
     public void testExistsNext() {
       try {
         Model model = Model.parseModel("src/test/resources/model2.json");
@@ -210,24 +192,6 @@ public class ModelCheckerTest {
         SimpleModelChecker mc = new SimpleModelChecker();
         printArrayList(mc.sat(model, query));
         assertEquals(mc.sat(model, query).size(), 3);
-      } catch (IOException e) {
-          e.printStackTrace();
-          fail(e.toString());
-      }
-    }
-
-    @Test
-    public void testPre() {
-      try {
-        Model model = Model.parseModel("src/test/resources/model2.json");
-
-        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
-        StateFormula query = new FormulaParser("src/test/resources/ctlExistsUntil2.json").parse();
-
-        SimpleModelChecker mc = new SimpleModelChecker();
-        System.out.print("model state: " + model.getStates()[3]);
-        printArrayList(mc.pre(model, model.getStates()[3]));
-        //assertEquals(mc.sat(model, query).size(), 3);
       } catch (IOException e) {
           e.printStackTrace();
           fail(e.toString());
@@ -397,7 +361,7 @@ public class ModelCheckerTest {
         SimpleModelChecker mc = new SimpleModelChecker();
 
         printArrayList(mc.sat(model, query));
-        //assertEquals(mc.sat(model, query).size(), 4);
+        assertEquals(mc.sat(model, query).size(), 2);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -435,7 +399,6 @@ public class ModelCheckerTest {
         SimpleModelChecker mc = new SimpleModelChecker();
 
         printArrayList(mc.sat(model, query));
-        //assertEquals(mc.sat(model, query).size(), 4);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -454,7 +417,6 @@ public class ModelCheckerTest {
         SimpleModelChecker mc = new SimpleModelChecker();
 
         printArrayList(mc.sat(model, query));
-        //assertEquals(mc.sat(model, query).size(), 4);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -473,7 +435,6 @@ public class ModelCheckerTest {
         SimpleModelChecker mc = new SimpleModelChecker();
 
         printArrayList(mc.sat(model, query));
-        //assertEquals(mc.sat(model, query).size(), 4);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -492,7 +453,6 @@ public class ModelCheckerTest {
         SimpleModelChecker mc = new SimpleModelChecker();
 
         printArrayList(mc.sat(model, query));
-        //assertEquals(mc.sat(model, query).size(), 3);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -510,8 +470,8 @@ public class ModelCheckerTest {
 
         SimpleModelChecker mc = new SimpleModelChecker();
 
-        printArrayList(mc.satActions(model, query));
-        assertEquals(mc.satActions(model, query).size(), 3);
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 3);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -529,8 +489,8 @@ public class ModelCheckerTest {
 
         SimpleModelChecker mc = new SimpleModelChecker();
 
-        printArrayList(mc.satActions(model, query));
-        assertEquals(mc.satActions(model, query).size(), 2);
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 2);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -548,8 +508,8 @@ public class ModelCheckerTest {
 
         SimpleModelChecker mc = new SimpleModelChecker();
 
-        printArrayList(mc.satActions(model, query));
-        assertEquals(mc.satActions(model, query).size(), 1);
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 1);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -567,8 +527,8 @@ public class ModelCheckerTest {
 
         SimpleModelChecker mc = new SimpleModelChecker();
 
-        printArrayList(mc.satActions(model, query));
-        assertEquals(mc.satActions(model, query).size(), 2);
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 2);
 
       } catch (IOException e) {
           e.printStackTrace();
@@ -586,8 +546,103 @@ public class ModelCheckerTest {
 
         SimpleModelChecker mc = new SimpleModelChecker();
 
-        printArrayList(mc.satActions(model, query));
-        assertEquals(mc.satActions(model, query).size(), 1);
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 1);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testExistsEventuallyActions() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlExistsEventuallyActions.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 2);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testForAllEventuallyActions() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlForAllEventuallyActions.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 0);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testForAllAlwaysActions() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlForAllAlwaysActions.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 1);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testExistsAlwaysActions() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlExistsAlwaysActions.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.sat(model, query));
+        assertEquals(mc.sat(model, query).size(), 1);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
+    @Test
+    public void testCtl1() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model1.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctl1.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.sat(model, query));
+        //assertEquals(mc.sat(model, query).size(), 1);
 
       } catch (IOException e) {
           e.printStackTrace();
