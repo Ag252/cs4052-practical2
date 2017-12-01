@@ -1,0 +1,5 @@
+{
+  "formula": "E( p aUb r )",
+  "a": ["act1", "act3"],
+	"b": ["act2", "act3"]
+}

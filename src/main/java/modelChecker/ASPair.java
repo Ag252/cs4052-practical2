@@ -17,14 +17,27 @@ public class ASPair {
   public static ArrayList<State> thereExistsStatesWithValidActions(ArrayList<ASPair> asPairs, Set<String> actions) {
     ArrayList<State> validStates = new ArrayList<State>();
     for(ASPair a : asPairs) {
-      ArrayList<String> list1 = new ArrayList<String>(Arrays.asList(a.actions));
-      ArrayList<String> list2 = new ArrayList<String>(actions);
+      ArrayList<String> stateActions = new ArrayList<String>(Arrays.asList(a.actions));
+      ArrayList<String> constraintActions = new ArrayList<String>(actions);
+      stateActions.retainAll(constraintActions);
 
-      list1.retainAll(list2);
-
-      if(!list1.isEmpty()) {
+      if(!stateActions.isEmpty()) {
         validStates.add(a.state);
       }
+    }
+    return validStates;
+  }
+
+  public static ArrayList<State> forAllStatesWithValidActions(ArrayList<ASPair> asPairs, Set<String> actions) {
+    ArrayList<State> validStates = new ArrayList<State>();
+    for(ASPair a : asPairs) {
+      ArrayList<String> stateActions = new ArrayList<String>(Arrays.asList(a.actions));
+      ArrayList<String> constraintActions = new ArrayList<String>(actions);
+
+      if(constraintActions.containsAll(stateActions)) {
+        validStates.add(a.state);
+      }
+
     }
     return validStates;
   }

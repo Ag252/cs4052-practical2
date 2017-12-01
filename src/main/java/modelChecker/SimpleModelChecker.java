@@ -117,10 +117,9 @@ public class SimpleModelChecker implements ModelChecker {
         if(pf instanceof Next) {
           return ACTsatEX(model, pf);
         }
-        // else if (pf instanceof Until) {
-        //   Until until = (Until) pf;
-        //   return satEU(model, until.left, until.right);
-        // }
+        else if (pf instanceof Until) {
+          return ACTsatEU(model, pf);
+        }
         // else if (pf instanceof Always) {
         //   return satEG(model, pf);
         // }
@@ -128,11 +127,12 @@ public class SimpleModelChecker implements ModelChecker {
         //   return satEU(model, new BoolProp(true), ((Eventually)pf).stateFormula);
         // }
       }
-      // else if (formula instanceof ForAll) {
-      //   PathFormula pf = ((ForAll)formula).pathFormula;
-      //   if(pf instanceof Next) {
-      //     return satAX(model, ((Next)pf).stateFormula);
-      //   }
+      else if (formula instanceof ForAll) {
+        PathFormula pf = ((ForAll)formula).pathFormula;
+        if(pf instanceof Next) {
+          return ACTsatAX(model, pf);
+        }
+      }
       //   else if(pf instanceof Until) {
       //     return satAU(model, pf);
       //     //Until until = (Until) pf;
@@ -239,6 +239,48 @@ public class SimpleModelChecker implements ModelChecker {
       return satSetUntil;
     }
 
+    public ArrayList<State> ACTsatEU(Model model, PathFormula formula) {
+      Until until = (Until) formula;
+      ArrayList<State> satSetUntil = new ArrayList<State>();
+      ArrayList<State> satSetPhi1 = satActions(model, until.left);
+      ArrayList<State> satSetPhi2 = satActions(model, until.right);
+      Set<String> left = until.getLeftActions();
+      Set<String> right = until.getRightActions();
+
+      for(State s : satSetPhi1) {
+        recurseOverEUPostStates(left, right, model, s, s, satSetPhi1, satSetPhi2, new ArrayList<State>(), satSetUntil);
+      }
+      return satSetUntil;
+    }
+
+    public void recurseOverEUPostStates(Set<String> left, Set<String> right, Model model, State initState, State currentState, ArrayList<State> satSetPhi1, ArrayList<State> satSetPhi2, ArrayList<State> tempSet, ArrayList<State> satSetUntil) {
+      ArrayList<ASPair> postASPairs = ACTpost(model, currentState);
+      ArrayList<State> validActionPostStatesForActionSetPhi1 = ASPair.thereExistsStatesWithValidActions(postASPairs, left);
+      ArrayList<State> validActionPostStatesForActionSetPhi2 = ASPair.thereExistsStatesWithValidActions(postASPairs, right);
+
+      ArrayList<State> validActionPostStates = union(validActionPostStatesForActionSetPhi1, validActionPostStatesForActionSetPhi2);
+
+      for(State p : validActionPostStates) {
+        if(satSetUntil.contains(initState)) {
+          continue;
+        }
+        else if(tempSet.contains(p)) {
+          if(satSetPhi2.contains(p) && validActionPostStatesForActionSetPhi2.contains(p)) {
+            satSetUntil.add(initState);
+            return;
+          }
+        }
+        else if (satSetPhi2.contains(p) && validActionPostStatesForActionSetPhi2.contains(p)) {
+          satSetUntil.add(initState);
+          return;
+        }
+        else if (satSetPhi1.contains(p) && validActionPostStatesForActionSetPhi1.contains(p)) {
+          tempSet.add(p);
+          recurseOverEUPostStates(left, right, model, initState, p, satSetPhi1, satSetPhi2, tempSet, satSetUntil);
+        }
+      }
+    }
+
     public void recurseOverPreStates(Model model, State s, ArrayList<State> satSetPhi1, ArrayList<State> satSetUntil){
 	     ArrayList<State> preStates = pre(model, s);
       	for(State p : preStates) {
@@ -281,7 +323,20 @@ public class SimpleModelChecker implements ModelChecker {
       return validStates;
     }
 
+    public ArrayList<State> ACTsatAX(Model model, PathFormula formula) {
+      Next next = (Next) formula;
+      Set<String> actions = next.getActions();
+      ArrayList<State> validStates = new ArrayList<State>();
 
+      for (State s : model.getStateList()) {
+        ArrayList<ASPair> postASPairs = ACTpost(model, s);
+        ArrayList<State> validActionPostStates = ASPair.forAllStatesWithValidActions(postASPairs, actions);
+        if(!validActionPostStates.isEmpty() && satActions(model, next.stateFormula).containsAll(validActionPostStates)) {
+          validStates.add(s);
+        }
+      }
+      return validStates;
+    }
 
     public ArrayList<State> satAX(Model model, StateFormula formula) {
       ArrayList<State> validStates = new ArrayList<State>();
