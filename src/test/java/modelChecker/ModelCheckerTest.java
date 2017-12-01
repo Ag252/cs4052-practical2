@@ -576,6 +576,25 @@ public class ModelCheckerTest {
       }
     }
 
+    @Test
+    public void testForAllUntilActions() {
+      try {
+        Model model = Model.parseModel("src/test/resources/model2.json");
+
+        StateFormula fairnessConstraint = new FormulaParser("src/test/resources/constraint1.json").parse();
+        StateFormula query = new FormulaParser("src/test/resources/ctlForAllUntilActions.json").parse();
+
+        SimpleModelChecker mc = new SimpleModelChecker();
+
+        printArrayList(mc.satActions(model, query));
+        assertEquals(mc.satActions(model, query).size(), 1);
+
+      } catch (IOException e) {
+          e.printStackTrace();
+          fail(e.toString());
+      }
+    }
+
 
 
 

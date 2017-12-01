@@ -132,25 +132,10 @@ public class SimpleModelChecker implements ModelChecker {
         if(pf instanceof Next) {
           return ACTsatAX(model, pf);
         }
+        else if(pf instanceof Until) {
+          return ACTsatAU(model, pf);
+        }
       }
-      //   else if(pf instanceof Until) {
-      //     return satAU(model, pf);
-      //     //Until until = (Until) pf;
-      //
-      //     // StateFormula notPhi1 = new Not(until.left);
-      //     // StateFormula notPhi2 = new Not(until.right);
-      //     // StateFormula and = new And(notPhi1, notPhi2);
-      //     //
-      //     // PathFormula untilAnd = new Until(notPhi2, and);
-      //     // PathFormula alwaysNot = new Always(notPhi2);
-      //     //
-      //     // StateFormula existsUntil = new ThereExists(untilAnd);
-      //     // StateFormula existsAlwaysNot = new ThereExists(alwaysNot);
-      //     // StateFormula or = new Or(existsUntil, existsAlwaysNot);
-      //     // StateFormula notOr = new Not(or);
-      //
-      //     // return sat(model, notOr);
-      //   }
       //   else if (pf instanceof Always) {
       //     StateFormula notPhi = new Not(((Always)pf).stateFormula);
       //     PathFormula eventually = new Eventually(notPhi);
@@ -163,6 +148,24 @@ public class SimpleModelChecker implements ModelChecker {
       //   }
       // }
       return null;
+    }
+
+    public ArrayList<State> ACTsatAU(Model model, PathFormula formula) {
+      Until until = (Until) formula;
+      ArrayList<State> satSetUntil = new ArrayList<State>();
+      ArrayList<State> satSetPhi1 = satActions(model, until.left);
+      ArrayList<State> satSetPhi2 = satActions(model, until.right);
+      Set<String> left = until.getLeftActions();
+      Set<String> right = until.getRightActions();
+
+      for(State s : satSetPhi1) {
+        BooleanHolder allPathsHold = new BooleanHolder(true);
+        ACTrecurseOverAUPostStates(left, right, allPathsHold, model, s, s, satSetPhi1, satSetPhi2, new ArrayList<State>(), satSetUntil);
+        if(allPathsHold.value) {
+          satSetUntil.add(s);
+        }
+      }
+      return satSetUntil;
     }
 
     public ArrayList<State> satAU(Model model, PathFormula formula) {
@@ -178,6 +181,36 @@ public class SimpleModelChecker implements ModelChecker {
         }
       }
       return satSetUntil;
+    }
+
+    public void ACTrecurseOverAUPostStates(Set<String> left, Set<String> right, BooleanHolder allPathsHold, Model model, State initState, State currentState, ArrayList<State> satSetPhi1, ArrayList<State> satSetPhi2, ArrayList<State> tempSet, ArrayList<State> satSetUntil) {
+      ArrayList<ASPair> postASPairs = ACTpost(model, currentState);
+      ArrayList<State> validActionPostStatesForActionSetPhi1 = ASPair.forAllStatesWithValidActions(postASPairs, left);
+      ArrayList<State> validActionPostStatesForActionSetPhi2 = ASPair.forAllStatesWithValidActions(postASPairs, right);
+
+      ArrayList<State> validActionPostStates = union(validActionPostStatesForActionSetPhi1, validActionPostStatesForActionSetPhi2);
+      for(State p : validActionPostStates) {
+        if(tempSet.contains(p)) {
+          if(satSetPhi2.contains(p) && validActionPostStatesForActionSetPhi2.contains(p)) {
+            continue;
+          }
+          else {
+            allPathsHold.value = false;
+            return;
+          }
+        }
+        else if (satSetPhi2.contains(p) && validActionPostStatesForActionSetPhi2.contains(p)) {
+          continue;
+        }
+        else if (satSetPhi1.contains(p) && validActionPostStatesForActionSetPhi1.contains(p)) {
+          tempSet.add(p);
+          ACTrecurseOverAUPostStates(left, right, allPathsHold, model, initState, p, satSetPhi1, satSetPhi2, tempSet, satSetUntil);
+        }
+        else {
+          allPathsHold.value = false;
+          return;
+        }
+      }
     }
 
     public void recurseOverAUPostStates(BooleanHolder allPathsHold, Model model, State initState, State currentState, ArrayList<State> satSetPhi1, ArrayList<State> satSetPhi2, ArrayList<State> tempSet, ArrayList<State> satSetUntil) {
